@@ -11,6 +11,21 @@ MOCK_SEO_DATA = {
         "search_volume": 135000,
         "keyword_difficulty": 68,
         "avg_cpc": 2.10
+    },
+    "mechanical keyboard": {
+        "search_volume": 110000,
+        "keyword_difficulty": 65,
+        "avg_cpc": 1.75
+    },
+    "gaming mouse": {
+        "search_volume": 145000,
+        "keyword_difficulty": 70,
+        "avg_cpc": 1.95
+    },
+    "gaming headset": {
+        "search_volume": 155000,
+        "keyword_difficulty": 71,
+        "avg_cpc": 1.85
     }
 }
 

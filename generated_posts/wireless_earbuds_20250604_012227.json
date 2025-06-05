@@ -1,5 +1,0 @@
-{
-  "error": "Error code: 404 - {'error': {'message': 'The model `llama2-70b-4096` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}",
-  "keyword": "wireless earbuds",
-  "generated_at": "2025-06-04T01:22:27.402259"
-}
