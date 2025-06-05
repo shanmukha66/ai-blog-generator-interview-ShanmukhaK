@@ -167,4 +167,87 @@ th, td {
 th {
     background-color: #f8f9fa;
     font-weight: 600;
+}
+
+/* Scheduler Styles */
+#calendar {
+    height: 600px;
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.fc-event {
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+}
+
+.fc-event-title {
+    font-weight: 500;
+}
+
+.list-group-item {
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    background-color: #f8f9fa;
+}
+
+.list-group-item:last-child {
+    margin-bottom: 0;
+}
+
+.schedule-form {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,.05);
+}
+
+.schedule-form .form-label {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.schedule-form .form-control {
+    border-radius: 6px;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+/* Calendar Overrides */
+.fc-theme-standard td, 
+.fc-theme-standard th {
+    border-color: #e9ecef;
+}
+
+.fc-theme-standard .fc-scrollgrid {
+    border-color: #e9ecef;
+}
+
+.fc-day-today {
+    background-color: #f8f9fa !important;
+}
+
+.fc-button-primary {
+    background-color: #4a90e2 !important;
+    border-color: #4a90e2 !important;
+}
+
+.fc-button-primary:hover {
+    background-color: #357abd !important;
+    border-color: #357abd !important;
+}
+
+.fc-button-primary:disabled {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
 } 

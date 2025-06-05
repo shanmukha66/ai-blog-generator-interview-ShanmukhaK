@@ -10,6 +10,8 @@ import os
 import atexit
 import json
 from datetime import datetime
+import subprocess
+from crontab import CronTab
 
 # Load environment variables
 load_dotenv()
@@ -22,20 +24,20 @@ CORS(app)  # Enable CORS for all routes
 GENERATED_CONTENT_DIR = "generated_content"
 os.makedirs(GENERATED_CONTENT_DIR, exist_ok=True)
 
-# Initialize scheduler
+# Initialize scheduler and crontab
 scheduler = None
+cron = CronTab(user=True)
+
+# Clean up any existing cron jobs on startup
+for job in cron:
+    if 'generate_daily.sh' in str(job):
+        cron.remove(job)
+cron.write()
 
 def init_scheduler():
     global scheduler
     if scheduler is None:
         scheduler = BackgroundScheduler()
-        scheduler.add_job(
-            func=generate_daily_blog,
-            trigger=CronTrigger(hour=9, minute=0),  # Run at 09:00 every day
-            id='daily_blog_generator',
-            name='Generate daily blog post',
-            replace_existing=True
-        )
         scheduler.start()
 
 # Initialize scheduler when app starts
@@ -70,6 +72,70 @@ def save_generated_content(keyword, metrics, blog):
 @app.route('/')
 def home():
     return render_template('index.html')
+
+@app.route('/scheduler')
+def scheduler_view():
+    return render_template('scheduler.html')
+
+@app.route('/api/jobs', methods=['GET'])
+def get_jobs():
+    jobs = []
+    for job in cron:
+        if 'generate_daily.sh' in str(job):
+            # Extract keyword from comment
+            keyword = job.comment.split('_')[1] if '_' in job.comment else 'Unknown Topic'
+            schedule = ' '.join(str(job.slices).split(' ')[:4])  # Only take minute, hour, day, month
+            jobs.append({
+                'id': job.comment,
+                'schedule': schedule,
+                'command': str(job),
+                'enabled': job.is_enabled(),
+                'keyword': keyword
+            })
+    return jsonify(jobs)
+
+@app.route('/api/jobs', methods=['POST'])
+def create_job():
+    data = request.json
+    keyword = data.get('keyword')
+    minute = data.get('minute')
+    hour = data.get('hour')
+    day = data.get('day')
+    month = data.get('month')
+    
+    if not all([keyword, minute, hour, day, month]):
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    job_id = f"blog_{keyword}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    
+    # Create the cron job with the keyword in the command
+    job = cron.new(
+        command=f'cd "{os.getcwd()}" && ./generate_daily.sh "{keyword}" >> /tmp/blog_generator.log 2>&1',
+        comment=job_id
+    )
+    
+    # Set the schedule (without day of week)
+    job.setall(minute, hour, day, month, '*')
+    
+    # Save the crontab
+    cron.write()
+    
+    return jsonify({
+        'id': job_id,
+        'schedule': ' '.join(str(job.slices).split(' ')[:4]),  # Only take minute, hour, day, month
+        'command': str(job),
+        'enabled': job.is_enabled(),
+        'keyword': keyword
+    })
+
+@app.route('/api/jobs/<job_id>', methods=['DELETE'])
+def delete_job(job_id):
+    for job in cron:
+        if job.comment == job_id:
+            cron.remove(job)
+            cron.write()
+            return jsonify({'status': 'success'})
+    return jsonify({'status': 'error', 'message': 'Job not found'}), 404
 
 @app.route('/generate', methods=['GET', 'POST'])
 def generate_blog():
@@ -134,6 +200,13 @@ def generate_now():
         "message": "Blog generation completed" if success else "Failed to generate blog"
     })
 
+def cleanup_jobs():
+    """Remove all blog generation cron jobs when the server stops"""
+    for job in cron:
+        if 'generate_daily.sh' in str(job):
+            cron.remove(job)
+    cron.write()
+
 def shutdown_scheduler():
     global scheduler
     if scheduler:
@@ -142,9 +215,11 @@ def shutdown_scheduler():
         except Exception:
             pass  # Ignore any shutdown errors
         scheduler = None
+    cleanup_jobs()
 
-# Register the shutdown function to be called on exit
+# Register the shutdown functions to be called on exit
 atexit.register(shutdown_scheduler)
+atexit.register(cleanup_jobs)
 
 if __name__ == '__main__':
     # Use port 5001 to avoid conflicts with AirPlay on macOS

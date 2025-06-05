@@ -1,19 +1,25 @@
 #!/bin/bash
 
-# Create output directory if it doesn't exist
-OUTPUT_DIR="generated_content"
-mkdir -p "$OUTPUT_DIR"
+# Check if a keyword was provided
+if [ -z "$1" ]; then
+    echo "Error: No keyword provided"
+    exit 1
+fi
 
-# Generate timestamp for unique filename
-TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-OUTPUT_FILE="$OUTPUT_DIR/blog_${TIMESTAMP}.json"
+KEYWORD="$1"
 
-# Make the API call and save the response
-curl "http://localhost:5001/generate?keyword=wireless+earbuds" > "$OUTPUT_FILE"
+# Get the directory of the script
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# Check if the curl command was successful
-if [ $? -eq 0 ]; then
-    echo "Content generated successfully and saved to $OUTPUT_FILE"
-else
-    echo "Error: Failed to generate content" >&2
+# Activate virtual environment if it exists
+if [ -d "venv" ]; then
+    source venv/bin/activate
+fi
+
+# Make a request to generate the blog with the provided keyword
+curl -X POST -H "Content-Type: application/json" -d "{\"keyword\":\"$KEYWORD\"}" http://localhost:5001/generate
+
+# Deactivate virtual environment if it was activated
+if [ -n "$VIRTUAL_ENV" ]; then
+    deactivate
 fi 
