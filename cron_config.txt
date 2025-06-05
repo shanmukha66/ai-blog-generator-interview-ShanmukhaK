@@ -1,0 +1,4 @@
+0 9 * * * /Volumes/workspace/Field\ of\ work/Hyperon2/ai-blog-generator-interview-ShanmukhaK/generate_daily.sh
+PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Frameworks/Python.framework/Versions/3.13/bin
+PYTHONPATH=/Volumes/workspace/Field\ of\ work/Hyperon2/ai-blog-generator-interview-ShanmukhaK
+0 9 * * * cd /Volumes/workspace/Field\ of\ work/Hyperon2/ai-blog-generator-interview-ShanmukhaK && ./generate_daily.sh >> /tmp/blog_generator.log 2>&1

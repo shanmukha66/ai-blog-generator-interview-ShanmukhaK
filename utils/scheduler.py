@@ -1,7 +1,12 @@
 from datetime import datetime
 import os
+import json
 from .seo_fetcher import get_metrics
 from .ai_generator import generate_blog_content
+
+# Use the same directory as the web interface
+GENERATED_CONTENT_DIR = "generated_content"
+os.makedirs(GENERATED_CONTENT_DIR, exist_ok=True)
 
 def generate_daily_blog():
     """
@@ -24,32 +29,33 @@ def generate_daily_blog():
         )
         
         if blog:
-            # Create blogs directory if it doesn't exist
-            os.makedirs('blogs', exist_ok=True)
+            # Generate filename with timestamp
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"blog_{timestamp}.json"
+            filepath = os.path.join(GENERATED_CONTENT_DIR, filename)
             
-            # Generate filename with today's date
-            today = datetime.now().strftime('%Y-%m-%d')
-            filename = f"blogs/blog_{today}.md"
-            
-            # Prepare the content with metadata
-            content = f"""---
-title: {blog.title}
-date: {today}
-keyword: {keyword}
-meta_description: {blog.meta_description}
-search_volume: {metrics.search_volume}
-keyword_difficulty: {metrics.keyword_difficulty:.1f}
-avg_cpc: ${metrics.avg_cpc:.2f}
----
-
-{blog.content}
-"""
+            # Prepare the content
+            content = {
+                "keyword": keyword,
+                "seo_metrics": {
+                    "search_volume": metrics.search_volume,
+                    "keyword_difficulty": round(metrics.keyword_difficulty, 1),
+                    "avg_cpc": round(metrics.avg_cpc, 2)
+                },
+                "blog": {
+                    "title": blog.title,
+                    "meta_description": blog.meta_description,
+                    "content": blog.content
+                },
+                "generated_at": timestamp,
+                "generated_by": "scheduler"
+            }
             
             # Save to file
-            with open(filename, 'w') as f:
-                f.write(content)
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(content, f, indent=2, ensure_ascii=False)
             
-            print(f"✅ Daily blog generated successfully: {filename}")
+            print(f"✅ Daily blog generated successfully: {filepath}")
             return True
         else:
             print("❌ Failed to generate blog content")

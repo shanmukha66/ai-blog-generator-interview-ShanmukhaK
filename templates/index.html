@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Blog Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-robot me-2"></i>AI Blog Generator
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-lg-8 offset-lg-2">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-pencil-alt me-2"></i>Generate Blog Content
+                        </h5>
+                        <form id="generateForm" class="mb-4">
+                            <div class="mb-3">
+                                <label for="keyword" class="form-label">Enter Topic or Keyword</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="keyword" 
+                                           name="keyword" 
+                                           placeholder="e.g., best gaming laptops 2025"
+                                           required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-magic me-2"></i>Generate
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="result" class="mt-4" style="display: none;">
+                    <div class="card">
+                        <div class="card-body">
+                            <h1 class="card-title h2" id="blogTitle"></h1>
+                            
+                            <div class="seo-metrics mb-4">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <i class="fas fa-chart-line me-2"></i>
+                                        Search Volume: <span id="searchVolume" class="fw-bold"></span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <i class="fas fa-gauge-high me-2"></i>
+                                        Difficulty: <span id="keywordDifficulty" class="fw-bold"></span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <i class="fas fa-dollar-sign me-2"></i>
+                                        CPC: $<span id="avgCpc" class="fw-bold"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="meta-description mb-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <span id="metaDescription"></span>
+                            </div>
+
+                            <div id="blogContent" class="mt-4"></div>
+
+                            <div class="text-end mt-4">
+                                <button class="btn btn-outline-primary btn-sm" onclick="window.print()">
+                                    <i class="fas fa-print me-2"></i>Print
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="loading" class="text-center mt-4" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">
+                        <i class="fas fa-wand-magic-sparkles me-2"></i>
+                        Generating your content...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center text-muted py-4 mt-5">
+        <small>© 2025 AI Blog Generator. All rights reserved.</small>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html> 
