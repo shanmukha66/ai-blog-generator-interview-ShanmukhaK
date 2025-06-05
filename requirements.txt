@@ -1,7 +1,10 @@
-flask==3.0.2
-python-dotenv==1.0.1
-groq==0.4.2
-apscheduler==3.10.4
+flask==3.0.0
+python-dotenv==1.0.0
+openai>=1.84.0
 requests==2.31.0
-python-dateutil==2.9.0
-markdown2==2.4.12 
+SQLAlchemy==2.0.25
+Flask-SQLAlchemy==3.1.1
+python-slugify==8.0.1
+markdown==3.5.1
+pytest==7.4.4
+APScheduler==3.10.4 
