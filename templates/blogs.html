@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Blogs - AI Blog Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .blog-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .blog-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .blog-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .blog-keyword {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .blog-meta {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .seo-metrics {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+            font-size: 0.85em;
+        }
+        .metric {
+            background: #f5f5f5;
+            padding: 5px 8px;
+            border-radius: 4px;
+        }
+        .blog-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.85em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-view {
+            background: #4caf50;
+            color: white;
+        }
+        .btn-delete {
+            background: #f44336;
+            color: white;
+        }
+        .filters {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .stats {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+        .blog-content {
+            white-space: pre-wrap;
+            line-height: 1.6;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Generated Blogs</h1>
+            <nav>
+                <a href="/">🏠 Home</a>
+                <a href="/scheduler">⏰ Scheduler</a>
+                <a href="/blogs" class="active">📚 Blogs</a>
+            </nav>
+        </header>
+
+        <div class="stats" id="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalBlogs">0</div>
+                <div class="stat-label">Total Blogs</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="scheduledBlogs">0</div>
+                <div class="stat-label">Scheduled</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="manualBlogs">0</div>
+                <div class="stat-label">Manual</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="todayBlogs">0</div>
+                <div class="stat-label">Today</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label for="typeFilter">Type:</label>
+                <select id="typeFilter">
+                    <option value="">All Types</option>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="manual">Manual</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="keywordFilter">Keyword:</label>
+                <input type="text" id="keywordFilter" placeholder="Filter by keyword...">
+            </div>
+            <div class="filter-group">
+                <label for="sortBy">Sort by:</label>
+                <select id="sortBy">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="keyword">Keyword A-Z</option>
+                </select>
+            </div>
+            <button onclick="refreshBlogs()" class="btn btn-primary">🔄 Refresh</button>
+        </div>
+
+        <div id="loading" style="text-align: center; padding: 40px;">
+            <p>Loading blogs...</p>
+        </div>
+
+        <div id="blogsContainer" class="blog-grid" style="display: none;">
+            <!-- Blogs will be loaded here -->
+        </div>
+
+        <div id="noBlogsMessage" style="display: none; text-align: center; padding: 40px;">
+            <h3>📝 No blogs found</h3>
+            <p>Generate your first blog using the <a href="/">main interface</a> or <a href="/scheduler">scheduler</a>!</p>
+        </div>
+    </div>
+
+    <!-- Blog View Modal -->
+    <div id="blogModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeBlogModal()">&times;</span>
+            <div id="blogModalContent">
+                <!-- Blog content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allBlogs = [];
+        let filteredBlogs = [];
+
+        async function loadBlogs() {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('blogsContainer').style.display = 'none';
+                document.getElementById('noBlogsMessage').style.display = 'none';
+
+                const response = await fetch('/api/blogs');
+                const blogs = await response.json();
+                
+                allBlogs = blogs;
+                updateStats();
+                applyFilters();
+                
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading blogs:', error);
+                document.getElementById('loading').innerHTML = '<p style="color: red;">Error loading blogs</p>';
+            }
+        }
+
+        function updateStats() {
+            const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
+            const scheduledCount = allBlogs.filter(blog => blog.generation_type === 'scheduled').length;
+            const manualCount = allBlogs.filter(blog => blog.generation_type !== 'scheduled').length;
+            const todayCount = allBlogs.filter(blog => blog.generated_at && blog.generated_at.startsWith(today)).length;
+
+            document.getElementById('totalBlogs').textContent = allBlogs.length;
+            document.getElementById('scheduledBlogs').textContent = scheduledCount;
+            document.getElementById('manualBlogs').textContent = manualCount;
+            document.getElementById('todayBlogs').textContent = todayCount;
+        }
+
+        function applyFilters() {
+            const typeFilter = document.getElementById('typeFilter').value;
+            const keywordFilter = document.getElementById('keywordFilter').value.toLowerCase();
+            const sortBy = document.getElementById('sortBy').value;
+
+            filteredBlogs = allBlogs.filter(blog => {
+                const matchesType = !typeFilter || 
+                    (typeFilter === 'scheduled' && blog.generation_type === 'scheduled') ||
+                    (typeFilter === 'manual' && blog.generation_type !== 'scheduled');
+                
+                const matchesKeyword = !keywordFilter || 
+                    blog.keyword.toLowerCase().includes(keywordFilter) ||
+                    blog.blog.title.toLowerCase().includes(keywordFilter);
+
+                return matchesType && matchesKeyword;
+            });
+
+            // Sort blogs
+            filteredBlogs.sort((a, b) => {
+                switch (sortBy) {
+                    case 'oldest':
+                        return a.generated_at.localeCompare(b.generated_at);
+                    case 'keyword':
+                        return a.keyword.localeCompare(b.keyword);
+                    case 'newest':
+                    default:
+                        return b.generated_at.localeCompare(a.generated_at);
+                }
+            });
+
+            displayBlogs();
+        }
+
+        function displayBlogs() {
+            const container = document.getElementById('blogsContainer');
+            
+            if (filteredBlogs.length === 0) {
+                container.style.display = 'none';
+                document.getElementById('noBlogsMessage').style.display = 'block';
+                return;
+            }
+
+            container.style.display = 'grid';
+            document.getElementById('noBlogsMessage').style.display = 'none';
+
+            container.innerHTML = filteredBlogs.map(blog => `
+                <div class="blog-card">
+                    <div class="blog-title">${blog.blog.title}</div>
+                    <div class="blog-keyword">${blog.keyword}</div>
+                    <div class="blog-meta">
+                        📅 ${formatDate(blog.generated_at)} | 
+                        🤖 ${blog.generation_type === 'scheduled' ? 'Scheduled' : 'Manual'} |
+                        📄 ${(blog.file_size / 1024).toFixed(1)} KB
+                    </div>
+                    <div class="seo-metrics">
+                        <div class="metric">🔍 ${blog.seo_metrics.search_volume.toLocaleString()}</div>
+                        <div class="metric">⚡ ${blog.seo_metrics.keyword_difficulty}/100</div>
+                        <div class="metric">💰 $${blog.seo_metrics.avg_cpc}</div>
+                    </div>
+                    <div class="blog-actions">
+                        <button class="btn-small btn-view" onclick="viewBlog('${blog.filename}')">👁️ View</button>
+                        <button class="btn-small btn-delete" onclick="deleteBlog('${blog.filename}')">🗑️ Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Unknown';
+            const year = timestamp.substring(0, 4);
+            const month = timestamp.substring(4, 6);
+            const day = timestamp.substring(6, 8);
+            const hour = timestamp.substring(9, 11);
+            const minute = timestamp.substring(11, 13);
+            return `${year}-${month}-${day} ${hour}:${minute}`;
+        }
+
+        async function viewBlog(filename) {
+            try {
+                const response = await fetch(`/api/blogs/${filename}`);
+                const blog = await response.json();
+                
+                document.getElementById('blogModalContent').innerHTML = `
+                    <h2>${blog.blog.title}</h2>
+                    <div class="blog-keyword">${blog.keyword}</div>
+                    <div class="blog-meta">
+                        📅 Generated: ${formatDate(blog.generated_at)} | 
+                        🤖 Type: ${blog.generation_type === 'scheduled' ? 'Scheduled' : 'Manual'}
+                    </div>
+                    <div class="seo-metrics" style="margin: 15px 0;">
+                        <div class="metric">🔍 Search Volume: ${blog.seo_metrics.search_volume.toLocaleString()}</div>
+                        <div class="metric">⚡ Difficulty: ${blog.seo_metrics.keyword_difficulty}/100</div>
+                        <div class="metric">💰 CPC: $${blog.seo_metrics.avg_cpc}</div>
+                    </div>
+                    <div style="margin: 15px 0;">
+                        <strong>Meta Description:</strong><br>
+                        ${blog.blog.meta_description}
+                    </div>
+                    <div class="blog-content">${blog.blog.content}</div>
+                `;
+                
+                document.getElementById('blogModal').style.display = 'block';
+            } catch (error) {
+                alert('Error loading blog details');
+            }
+        }
+
+        function closeBlogModal() {
+            document.getElementById('blogModal').style.display = 'none';
+        }
+
+        async function deleteBlog(filename) {
+            if (!confirm('Are you sure you want to delete this blog?')) return;
+            
+            try {
+                const response = await fetch(`/api/blogs/${filename}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert('Blog deleted successfully');
+                    loadBlogs();
+                } else {
+                    alert('Error deleting blog');
+                }
+            } catch (error) {
+                alert('Error deleting blog');
+            }
+        }
+
+        function refreshBlogs() {
+            loadBlogs();
+        }
+
+        // Event listeners
+        document.getElementById('typeFilter').addEventListener('change', applyFilters);
+        document.getElementById('keywordFilter').addEventListener('input', applyFilters);
+        document.getElementById('sortBy').addEventListener('change', applyFilters);
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('blogModal');
+            if (event.target === modal) {
+                closeBlogModal();
+            }
+        }
+
+        // Load blogs on page load
+        loadBlogs();
+    </script>
+</body>
+</html> 

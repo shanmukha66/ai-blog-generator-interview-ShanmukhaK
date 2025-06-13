@@ -2,34 +2,81 @@
 
 An automated blog content generator that creates SEO-optimized blog posts based on provided keywords. The application uses OpenAI's API for content generation and provides SEO metrics for the target keywords.
 
+## 🎥 Demo Video
+
+Watch the complete demonstration of the AI Blog Generator in action:
+**[📺 YouTube Demo](https://youtu.be/k608Yada4rM?si=w7sGfg6SzS6k8_g4)**
+
 ## Features
 
-- 🤖 AI-powered blog content generation
+- 🤖 AI-powered blog content generation using OpenAI GPT
 - 📊 SEO metrics for keywords (search volume, difficulty, CPC)
 - 🎯 Automated affiliate link integration
-- 📱 Responsive web interface
-- ⏰ Automated daily content generation
-- 💾 JSON-based content storage
+- 📱 Responsive web interface with modern UI
+- ⏰ **NEW**: Advanced scheduling system with calendar view
+- 📚 **NEW**: Complete blog management and tracking system
+- 💾 JSON-based content storage with metadata
+- 🔍 **NEW**: Search, filter, and view all generated blogs
+- 📈 **NEW**: Statistics dashboard for blog analytics
+- 🗓️ **NEW**: Cron job management through web interface
+
+## Recent Updates (Latest Version)
+
+### ✨ **Major Enhancements Added:**
+
+1. **📅 Advanced Scheduler Interface**
+   - Interactive calendar view for scheduling
+   - Precise time scheduling (minute, hour, day, month)
+   - Visual schedule management
+   - Cron job creation and deletion
+
+2. **📚 Complete Blog Management System**
+   - Dedicated `/blogs` page for viewing all generated content
+   - Filter blogs by type (scheduled vs manual)
+   - Search blogs by keyword or title
+   - Sort by date, keyword, or creation time
+   - Statistics dashboard showing total, scheduled, manual, and today's blogs
+
+3. **👁️ Enhanced Blog Viewing**
+   - Modal popup for full blog content viewing
+   - SEO metrics display for each blog
+   - File size and creation time information
+   - Delete functionality for blog management
+
+4. **🔧 Improved Backend**
+   - Separate tracking for scheduled vs manual blogs
+   - Enhanced API endpoints for blog management
+   - Better error handling and logging
+   - Improved file naming conventions
+
+5. **🎨 Better User Experience**
+   - Modern card-based layout for blog display
+   - Responsive design for all screen sizes
+   - Loading states and error handling
+   - Intuitive navigation between pages
 
 ## Project Structure
 
 ```
 ai-blog-generator/
-├── app.py                 # Main Flask application
+├── app.py                 # Main Flask application with enhanced API endpoints
 ├── requirements.txt       # Python dependencies
-├── generate_daily.sh      # Cron job script
-├── .env                   # Environment variables
+├── generate_daily.sh      # Cron job script for scheduled generation
+├── .env                   # Environment variables (create this file)
 ├── static/               # Static assets
-│   ├── style.css         # CSS styles
+│   ├── style.css         # Enhanced CSS styles
 │   └── script.js         # Frontend JavaScript
 ├── templates/            # HTML templates
-│   └── index.html        # Main web interface
+│   ├── index.html        # Main blog generation interface
+│   ├── scheduler.html    # NEW: Advanced scheduling interface
+│   └── blogs.html        # NEW: Blog management and viewing page
 ├── utils/                # Python modules
-│   ├── ai_generator.py   # OpenAI integration
-│   ├── seo_fetcher.py    # SEO metrics fetcher
-│   └── scheduler.py      # Scheduling utilities
+│   ├── ai_generator.py   # OpenAI GPT integration
+│   ├── seo_fetcher.py    # SEO metrics fetcher (mock data)
+│   └── scheduler.py      # Enhanced scheduling utilities
 └── generated_content/    # Generated blog posts
-    └── blog_*.json       # Generated content files
+    ├── manual_blog_*.json     # Manually generated blogs
+    └── scheduled_blog_*.json  # Scheduled blogs
 ```
 
 ## Prerequisites
@@ -79,28 +126,52 @@ PORT=5001
 python3 app.py
 ```
 
-The server will start on `http://localhost:5001` (Port 5001 is used to avoid conflicts with AirPlay on macOS).
+The server will start on `http://localhost:5000` by default. You can access:
+- **Main Interface**: `http://localhost:5000/`
+- **Scheduler**: `http://localhost:5000/scheduler`
+- **Blog Management**: `http://localhost:5000/blogs`
 
 ### Using the Web Interface
 
-1. Open `http://localhost:5001` in your browser
+#### 🏠 **Main Page** (`/`)
+1. Open `http://localhost:5000` in your browser
 2. Enter a keyword in the input field
 3. Click "Generate Blog Post"
 4. View the generated content, including:
-   - Blog title
-   - Meta description
-   - SEO metrics
-   - Full blog content with affiliate links
+   - Blog title and meta description
+   - SEO metrics (search volume, difficulty, CPC)
+   - Full blog content with affiliate link placeholders
+
+#### ⏰ **Scheduler Page** (`/scheduler`)
+1. Navigate to the Scheduler from the main menu
+2. Fill in the scheduling form:
+   - **Blog Topic/Keyword**: Your target keyword
+   - **Time Settings**: Minute, hour, day, month
+3. Click "Schedule Blog Generation"
+4. View scheduled jobs in the calendar and list
+5. Monitor job execution and delete jobs as needed
+
+#### 📚 **Generated Blogs Page** (`/blogs`)
+1. Navigate to "Generated Blogs" from the main menu
+2. View all your generated blogs with:
+   - **Statistics Dashboard**: Total, scheduled, manual, and today's blogs
+   - **Filtering Options**: By type (scheduled/manual) and keyword search
+   - **Sorting Options**: By date (newest/oldest) or keyword
+3. Click "👁️ View" to see full blog content in a modal
+4. Use "🗑️ Delete" to remove unwanted blogs
+5. Use "🔄 Refresh" to update the blog list
 
 ## API Documentation
 
-### Generate Endpoint
+### Blog Generation Endpoints
 
-**Endpoint**: `/generate`
-**Method**: GET
+#### Generate Blog
+**Endpoint**: `/generate`  
+**Methods**: GET, POST  
 **Parameters**:
 - `keyword` (required): The target keyword for blog generation
-  - Example: `/generate?keyword=wireless+earbuds`
+
+**Example**: `/generate?keyword=wireless+earbuds`
 
 **Response Format**:
 ```json
@@ -116,9 +187,52 @@ The server will start on `http://localhost:5001` (Port 5001 is used to avoid con
         "meta_description": "SEO meta description",
         "content": "Full blog post content"
     },
-    "saved_to": "blog_20240605_123456.json"
+    "saved_to": "manual_blog_20240605_123456.json"
 }
 ```
+
+### Blog Management Endpoints
+
+#### Get All Blogs
+**Endpoint**: `/api/blogs`  
+**Method**: GET  
+**Description**: Retrieve all generated blogs with metadata
+
+#### Get Specific Blog
+**Endpoint**: `/api/blogs/<filename>`  
+**Method**: GET  
+**Description**: Get details of a specific blog file
+
+#### Delete Blog
+**Endpoint**: `/api/blogs/<filename>`  
+**Method**: DELETE  
+**Description**: Delete a specific blog file
+
+### Scheduling Endpoints
+
+#### Get Scheduled Jobs
+**Endpoint**: `/api/jobs`  
+**Method**: GET  
+**Description**: Retrieve all scheduled cron jobs
+
+#### Create Scheduled Job
+**Endpoint**: `/api/jobs`  
+**Method**: POST  
+**Body**:
+```json
+{
+    "keyword": "target keyword",
+    "minute": 0,
+    "hour": 9,
+    "day": 15,
+    "month": 12
+}
+```
+
+#### Delete Scheduled Job
+**Endpoint**: `/api/jobs/<job_id>`  
+**Method**: DELETE  
+**Description**: Remove a scheduled job
 
 ## Automated Content Generation
 
@@ -161,7 +275,7 @@ Add the following line (the path will be automatically set during installation):
 
 1. Test the API endpoint:
 ```bash
-curl "http://localhost:5001/generate?keyword=your+keyword"
+curl "http://localhost:5000/generate?keyword=your+keyword"
 ```
 
 2. Test the cron script:
@@ -196,7 +310,7 @@ tail -f /tmp/blog_generator.log
    - Verify PATH includes Python installation
 
 2. **Flask App Not Running**
-   - Check if port 5001 is available
+   - Check if port 5000 is available
    - Ensure virtual environment is activated
    - Verify all dependencies are installed
 
@@ -204,6 +318,19 @@ tail -f /tmp/blog_generator.log
    - Check `/tmp/blog_generator.log` for errors
    - Verify script permissions (should be executable)
    - Ensure paths in crontab are absolute
+   - **macOS Users**: Grant Terminal full disk access in System Preferences
+
+4. **Scheduled Blogs Not Appearing**
+   - Check the `/blogs` page and filter by "Scheduled" type
+   - Refresh the page to reload blog list
+   - Verify Flask server is running when cron jobs execute
+   - Check `generated_content/` directory for `scheduled_blog_*.json` files
+
+5. **Blog Management Issues**
+   - Clear browser cache if blogs don't load
+   - Check browser console for JavaScript errors
+   - Ensure all API endpoints are accessible
+   - Verify file permissions in `generated_content/` directory
 
 ### Error Logs
 

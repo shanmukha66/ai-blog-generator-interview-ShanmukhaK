@@ -17,7 +17,7 @@ if [ -d "venv" ]; then
 fi
 
 # Make a request to generate the blog with the provided keyword
-curl -X POST -H "Content-Type: application/json" -d "{\"keyword\":\"$KEYWORD\"}" http://localhost:5001/generate
+curl -X POST -H "Content-Type: application/json" -d "{\"keyword\":\"$KEYWORD\"}" http://localhost:5000/generate
 
 # Deactivate virtual environment if it was activated
 if [ -n "$VIRTUAL_ENV" ]; then

@@ -46,7 +46,7 @@ init_scheduler()
 def save_generated_content(keyword, metrics, blog):
     """Save the generated content to a JSON file"""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"blog_{timestamp}.json"
+    filename = f"manual_blog_{timestamp}.json"
     filepath = os.path.join(GENERATED_CONTENT_DIR, filename)
     
     content = {
@@ -61,7 +61,9 @@ def save_generated_content(keyword, metrics, blog):
             "meta_description": blog.meta_description,
             "content": blog.content
         },
-        "generated_at": timestamp
+        "generated_at": timestamp,
+        "generated_by": "manual",
+        "generation_type": "manual"
     }
     
     with open(filepath, 'w', encoding='utf-8') as f:
@@ -199,6 +201,72 @@ def generate_now():
         "status": "success" if success else "error",
         "message": "Blog generation completed" if success else "Failed to generate blog"
     })
+
+@app.route('/blogs')
+def blogs_view():
+    """View all generated blogs"""
+    return render_template('blogs.html')
+
+@app.route('/api/blogs', methods=['GET'])
+def get_all_blogs():
+    """Get list of all generated blogs"""
+    blogs = []
+    try:
+        if os.path.exists(GENERATED_CONTENT_DIR):
+            for filename in os.listdir(GENERATED_CONTENT_DIR):
+                if filename.endswith('.json'):
+                    filepath = os.path.join(GENERATED_CONTENT_DIR, filename)
+                    try:
+                        with open(filepath, 'r', encoding='utf-8') as f:
+                            blog_data = json.load(f)
+                            # Add filename and file stats
+                            blog_data['filename'] = filename
+                            blog_data['file_size'] = os.path.getsize(filepath)
+                            blog_data['created_time'] = datetime.fromtimestamp(
+                                os.path.getctime(filepath)
+                            ).strftime('%Y-%m-%d %H:%M:%S')
+                            blogs.append(blog_data)
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+        
+        # Sort by creation time (newest first)
+        blogs.sort(key=lambda x: x.get('generated_at', ''), reverse=True)
+        return jsonify(blogs)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/blogs/<filename>')
+def get_blog_details(filename):
+    """Get details of a specific blog"""
+    try:
+        filepath = os.path.join(GENERATED_CONTENT_DIR, filename)
+        if not os.path.exists(filepath):
+            return jsonify({'error': 'Blog not found'}), 404
+        
+        with open(filepath, 'r', encoding='utf-8') as f:
+            blog_data = json.load(f)
+            # Add file metadata
+            blog_data['filename'] = filename
+            blog_data['file_size'] = os.path.getsize(filepath)
+            blog_data['created_time'] = datetime.fromtimestamp(
+                os.path.getctime(filepath)
+            ).strftime('%Y-%m-%d %H:%M:%S')
+            return jsonify(blog_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/blogs/<filename>', methods=['DELETE'])
+def delete_blog(filename):
+    """Delete a specific blog"""
+    try:
+        filepath = os.path.join(GENERATED_CONTENT_DIR, filename)
+        if not os.path.exists(filepath):
+            return jsonify({'error': 'Blog not found'}), 404
+        
+        os.remove(filepath)
+        return jsonify({'status': 'success', 'message': 'Blog deleted successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 def cleanup_jobs():
     """Remove all blog generation cron jobs when the server stops"""
